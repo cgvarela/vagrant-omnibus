@@ -17,15 +17,15 @@
 module VagrantPlugins
   #
   module Omnibus
-    # @author Seth Chisamore <schisamo@opscode.com>
-    class Plugin < Vagrant.plugin('2')
-      name 'vagrant-omnibus'
+    # @author Seth Chisamore <schisamo@chef.io>
+    class Plugin < Vagrant.plugin("2")
+      name "vagrant-omnibus"
       description <<-DESC
       This plugin ensures the desired version of Chef is installed
       via the platform-specific Omnibus packages.
       DESC
 
-      VAGRANT_VERSION_REQUIREMENT = '>= 1.1.0'
+      VAGRANT_VERSION_REQUIREMENT = ">= 1.1.0"
 
       # Returns true if the Vagrant version fulfills the requirements
       #
@@ -33,7 +33,8 @@ module VagrantPlugins
       # @return [Boolean]
       def self.check_vagrant_version(*requirements)
         Gem::Requirement.new(*requirements).satisfied_by?(
-          Gem::Version.new(Vagrant::VERSION))
+          Gem::Version.new(Vagrant::VERSION)
+        )
       end
 
       # Verifies that the Vagrant version fulfills the requirements
@@ -43,15 +44,16 @@ module VagrantPlugins
       def self.check_vagrant_version!
         unless check_vagrant_version(VAGRANT_VERSION_REQUIREMENT)
           msg = I18n.t(
-            'vagrant-omnibus.errors.vagrant_version',
-            requirement: VAGRANT_VERSION_REQUIREMENT.inspect)
-          $stderr.puts msg
-          fail msg
+            "vagrant-omnibus.errors.vagrant_version",
+            requirement: VAGRANT_VERSION_REQUIREMENT.inspect
+          )
+          $stderr.puts(msg)
+          raise msg
         end
       end
 
       action_hook(:install_chef, Plugin::ALL_ACTIONS) do |hook|
-        require_relative 'action/install_chef'
+        require_relative "action/install_chef"
         hook.after(Vagrant::Action::Builtin::Provision, Action::InstallChef)
 
         # The AWS provider < v0.4.0 uses a non-standard Provision action
@@ -60,13 +62,15 @@ module VagrantPlugins
         # mitchellh/vagrant-aws/blob/v0.3.0/lib/vagrant-aws/action.rb#L105
         #
         if defined? VagrantPlugins::AWS::Action::TimedProvision
-          hook.after(VagrantPlugins::AWS::Action::TimedProvision,
-                     Action::InstallChef)
+          hook.after(
+            VagrantPlugins::AWS::Action::TimedProvision,
+            Action::InstallChef
+          )
         end
       end
 
       config(:omnibus) do
-        require_relative 'config'
+        require_relative "config"
         Config
       end
     end
